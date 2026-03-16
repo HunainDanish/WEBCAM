@@ -3,7 +3,7 @@ console.log("Script Loaded");
 let result = document.getElementById("result");
 let video = document.getElementById("video");
 
-const DRIVE_API = "PASTE_YOUR_GOOGLE_SCRIPT_URL_HERE";
+const DRIVE_API = "https://script.google.com/macros/s/AKfycbzrbN-bmVQOJDuErQ_4BYI_W4IBL1ogKyYUQmDVumwsnFoLBZt8_kzC8TpjfzsmwO1fYg/exec";
 
 function press(v){
 result.value += v;
