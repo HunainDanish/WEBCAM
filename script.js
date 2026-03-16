@@ -3,7 +3,7 @@ console.log("Script Loaded");
 let result = document.getElementById("result");
 let video = document.getElementById("video");
 
-const DRIVE_API = "https://script.google.com/macros/s/AKfycbzrbN-bmVQOJDuErQ_4BYI_W4IBL1ogKyYUQmDVumwsnFoLBZt8_kzC8TpjfzsmwO1fYg/exec";
+const DRIVE_API = "https://script.google.com/macros/s/AKfycbyP5H3U1sKrClXXeWvb8nJhahk1JpIZkQEmu6ttuXBB_hXDJcGWH3-d8U7a1Zp9ubQVIw/exec";
 
 function press(v){
     result.value += v;
