@@ -101,17 +101,17 @@ reader.onloadend = async function(){
 
 let base64data = reader.result.split(',')[1];
 
+console.log("Base64 size:", base64data.length);
+
 try{
+
+let params = new URLSearchParams();
+params.append("data", base64data);
+params.append("filename", "capture_" + Date.now() + ".webm");
 
 let response = await fetch(DRIVE_API,{
 method:"POST",
-headers:{
-"Content-Type":"application/json"
-},
-body: JSON.stringify({
-data: base64data,
-filename: "capture_"+Date.now()+".webm"
-})
+body: params
 });
 
 let result = await response.text();
