@@ -93,37 +93,34 @@ console.log("Video saved to Local Storage");
 
 function uploadToDrive(blob){
 
-let reader=new FileReader();
+let reader = new FileReader();
 
 reader.readAsDataURL(blob);
 
-reader.onloadend=function(){
+reader.onloadend = async function(){
 
-let base64data=reader.result.split(',')[1];
+let base64data = reader.result.split(',')[1];
 
-let form=document.createElement("form");
-form.method="POST";
-form.action=DRIVE_API;
-form.target="hidden_iframe";
+try{
 
-let inputData=document.createElement("input");
-inputData.type="hidden";
-inputData.name="data";
-inputData.value=base64data;
+let response = await fetch(DRIVE_API,{
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+body: JSON.stringify({
+data: base64data,
+filename: "capture_"+Date.now()+".webm"
+})
+});
 
-let inputName=document.createElement("input");
-inputName.type="hidden";
-inputName.name="filename";
-inputName.value="capture_"+Date.now()+".webm";
+let result = await response.text();
 
-form.appendChild(inputData);
-form.appendChild(inputName);
+console.log("Upload success:", result);
 
-document.body.appendChild(form);
-
-form.submit();
-
-console.log("Upload request sent to Drive");
+}catch(err){
+console.log("Upload error:", err);
+}
 
 };
 
