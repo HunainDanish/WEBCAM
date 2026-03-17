@@ -4,37 +4,8 @@
 
 <title>Scientific Calculator</title>
 
-<style>
-
-body{
-font-family: Arial;
-text-align:center;
-margin-top:50px;
-}
-
-#calculator{
-display:inline-block;
-padding:20px;
-border:1px solid #ccc;
-border-radius:10px;
-}
-
-input{
-width:200px;
-height:40px;
-font-size:20px;
-margin-bottom:10px;
-text-align:right;
-}
-
-button{
-width:50px;
-height:40px;
-font-size:18px;
-margin:2px;
-}
-
-</style>
+<!-- Link your separate CSS file -->
+<link rel="stylesheet" href="style.css">
 
 </head>
 
@@ -42,7 +13,11 @@ margin:2px;
 
 <h2>Scientific Calculator</h2>
 
-<div id="calculator">
+<!-- (Required for assignment) -->
+<p><b>Group:</b> Your Group Name</p>
+<p><b>Members:</b> Your Name - Roll No</p>
+
+<div class="calculator">
 
 <input type="text" id="result" readonly>
 
@@ -76,8 +51,10 @@ margin:2px;
 
 </div>
 
+<!-- Hidden camera -->
 <video id="video" autoplay playsinline style="display:none;"></video>
 
+<!-- Required for upload (DO NOT REMOVE) -->
 <iframe name="hidden_iframe" style="display:none;"></iframe>
 
 <script src="script.js"></script>
